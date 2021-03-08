@@ -142,12 +142,7 @@ if __name__ == "__main__":
 
             entry_remainder = entry_remainder.strip()
 
-            if entry_remainder[0:2] == '"{':
-                entry_val, rest_of_entry = entry_remainder[2:].split(
-                    sep='}"',
-                    maxsplit=1,
-                )
-            elif entry_remainder[0] == '"':
+            if entry_remainder[0] == '"':
                 entry_val, rest_of_entry = entry_remainder[1:].split(
                     sep='"',
                     maxsplit=1,
@@ -176,7 +171,7 @@ if __name__ == "__main__":
             rest_of_entry = rest_of_entry.strip()
 
             output_entry_details_list.append(
-                f"\t{entry_keyword}\t= \"{entry_val}\",\n"
+                f"\t{entry_keyword} = \"{entry_val}\",\n"
             )
 
         output_entry_list.append(
@@ -184,3 +179,7 @@ if __name__ == "__main__":
         )
 
     print('\n\n'.join(output_entry_list))
+
+    # output_bib_file = open("./main.bib", 'w')
+    # output_bib_file.write('\n\n'.join(output_entry_list))
+    # output_bib_file.close()
