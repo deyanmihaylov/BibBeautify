@@ -41,6 +41,16 @@ numpages
 interhash
 intrahash
 shorttitle
+isbn
 issn
 language
 copyright
+requested-for
+description
+institution
+day
+bibdate
+bibsource
+articleno
+location
+issue
