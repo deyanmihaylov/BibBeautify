@@ -75,8 +75,13 @@ TYPES_LIST = [
 ]
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Make a bib file pretty')
-    parser.add_argument('path', metavar='p', type=str, help='path to the .bib file')
+    parser = argparse.ArgumentParser(description="Make a bib file pretty")
+    parser.add_argument(
+        "path",
+        metavar='p',
+        type=str,
+        help="path to the .bib file",
+    )
 
     args = parser.parse_args()
 
