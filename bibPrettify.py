@@ -21,59 +21,10 @@ def find_parens(s):
 
     return toret
 
-KEYWORDS = [
-    "author",
-    "title",
-    "file",
-    "journal",
-    "volume",
-    "edition",
-    "number",
-    "version",
-    "year",
-    "month",
-    "timestamp",
-    "number",
-    "pages",
-    "eid",
-    "doi",
-    "eprint",
-    "archiveprefix",
-    "primaryclass",
-    "slaccitation",
-    "howpublished",
-    "publisher",
-    "keywords",
-    "collaboration",
-    "address",
-    "url",
-    "bdsk-url-1",
-    "booktitle",
-    "reportnumber",
-    "note",
-    "series",
-    "editor",
-    "adsurl",
-    "biburl",
-    "adsnote",
-    "added-at",
-    "date-added",
-    "date-modified",
-    "numpages",
-    "interhash",
-    "intrahash",
-]
-
-TYPES_LIST = [
-    "ARTICLE",
-    "BOOK",
-    "EPRINT",
-    "INPROCEEDINGS",
-    "INCOLLECTION",
-    "SOFTWARE",
-    "MISC",
-    "OTHER",
-]
+def load_words_from_file(filepath: str) -> list:
+    with open (filepath, 'r') as f:
+        words = f.read().strip().split('\n')
+    return words
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Make a bib file pretty")
@@ -81,16 +32,23 @@ if __name__ == "__main__":
         "path",
         metavar='p',
         type=str,
-        help="path to the .bib file",
+        help="Path to the .bib file",
     )
 
     args = parser.parse_args()
 
+    types = load_words_from_file("entry_types.txt")
+    keywords = load_words_from_file("keywords.txt")
+    print(keywords)
+    exit()
+
     bib_file = open(args.path, 'r')
-    bib_filecontents = bib_file.read()
+    bib_filecontents = bib_file.read().strip()
     bib_file.close()
 
+    # split file into separate entries
     entries_strings = bib_filecontents.split("@")
+    entries_strings = [entry for entry in entries_strings if entry not in ['', '\n']]
 
     output_entry_list = []
 
@@ -102,7 +60,8 @@ if __name__ == "__main__":
         if entry_string == "":
             continue
         elif entry_string.strip()[-1] != "}":
-            continue
+            print("issue")
+            break
 
         entry_type, entry_body = entry_string.split(
             sep="{",
