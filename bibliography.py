@@ -20,4 +20,9 @@ class Bibliography(ABC):
         ]
         self.number_of_entries = len(self.entries_strings)
 
+
+def BibEntry(ABC):
+    def __init__(self, entry_string: str) -> None:
+        self.entry_string = entry_string
+
         
