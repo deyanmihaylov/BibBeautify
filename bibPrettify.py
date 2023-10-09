@@ -67,6 +67,7 @@ KEYWORDS = [
 TYPES_LIST = [
     "ARTICLE",
     "BOOK",
+    "EPRINT",
     "INPROCEEDINGS",
     "INCOLLECTION",
     "SOFTWARE",
