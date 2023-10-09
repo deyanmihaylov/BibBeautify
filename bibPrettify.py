@@ -21,6 +21,26 @@ def find_parens(s):
 
     return toret
 
+def is_good(s):
+    if s.count('{') != s.count('}'):
+        return False
+    elif (s.count('"') - s.count('\"')) %2 != 0:
+        return False
+    else:
+        return True
+
+def undress_value(val):
+    if len(val) >= 2:
+        if val[0] == '"' and val[-1] == '"':
+            val = val[1:-1]
+
+    if len(val) >= 2:
+        if val[0] == '{' and val[-1] == '}':
+            if val[1:].find('{') < val[1:].find('}'):
+                val = val[1:-1]
+                
+    return val
+
 def load_words_from_file(filepath: str) -> list:
     with open (filepath, 'r') as f:
         words = f.read().strip().split('\n')
@@ -36,11 +56,9 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
-    types = load_words_from_file("entry_types.txt")
-    keywords = load_words_from_file("keywords.txt")
-    print(keywords)
-    exit()
+    
+    TYPES_LIST = load_words_from_file("entry_types.txt")
+    KEYWORDS = load_words_from_file("keywords.txt")
 
     bib_file = open(args.path, 'r')
     bib_filecontents = bib_file.read().strip()
@@ -59,9 +77,9 @@ if __name__ == "__main__":
 
         if entry_string == "":
             continue
-        elif entry_string.strip()[-1] != "}":
+        elif '{' not in entry_string and '}' not in entry_string:
             print("issue")
-            break
+            exit()
 
         entry_type, entry_body = entry_string.split(
             sep="{",
@@ -92,51 +110,41 @@ if __name__ == "__main__":
         output_entry_details_list = []
 
         rest_of_entry = entry_details
-
+        c = 0
         while rest_of_entry != "":
-            entry_keyword, entry_remainder = rest_of_entry.split(
-                sep="=",
-                maxsplit=1,
-            )
-
-            entry_keyword = entry_keyword.strip()
-
+            c += 1
+            equal_sign_idx = rest_of_entry.find('=')
+            entry_keyword = rest_of_entry[0:equal_sign_idx].strip()
             if entry_keyword.lower() not in KEYWORDS:
                 print("UNKNOWN KEYWORD: ", entry_keyword.lower())
                 exit()
-
-            entry_remainder = entry_remainder.strip()
-
-            if entry_remainder[0] == '"':
-                entry_val, rest_of_entry = entry_remainder[1:].split(
-                    sep='"',
-                    maxsplit=1,
-                )
-            elif entry_remainder[0] == '{':
-                curly_brackets = find_parens(entry_remainder)
-
-                entry_val = entry_remainder[1:curly_brackets[0]]
-                rest_of_entry = entry_remainder[curly_brackets[0]+1:]
+            remainder_of_entry = rest_of_entry[equal_sign_idx+1:]
+            N = remainder_of_entry.count('=')
+            if N == 0:
+                entry_value = remainder_of_entry.strip()
+                rest_of_entry = ""
             else:
-                if "," in entry_remainder:
-                    entry_val, rest_of_entry = entry_remainder.split(
-                        sep=',',
-                        maxsplit=1,
-                    )
-                else:
-                    entry_val = entry_remainder
-                    rest_of_entry = ""
+                for i in range(N):
+                    candidate_value_and_next_keyword = remainder_of_entry[:remainder_of_entry.find('=')]
+                    if ',' not in candidate_value_and_next_keyword:
+                        if i == N - 1:
+                            entry_value = remainder_of_entry
+                            remainder_of_entry = ""
+                        else:
+                            continue
+                    else:
+                        candidate_value, candidate_keyword = candidate_value_and_next_keyword.rsplit(',', maxsplit=1)
+                        if is_good(candidate_value) and candidate_keyword.strip().lower() in KEYWORDS:
+                            entry_value = candidate_value.strip()
+                            remainder_of_entry = remainder_of_entry[len(candidate_value)+1:]
+                            break
+                
+                rest_of_entry = remainder_of_entry
 
-            rest_of_entry = rest_of_entry.strip()
-
-            if len(rest_of_entry) > 0:
-                if rest_of_entry[0] == ",":
-                    rest_of_entry = rest_of_entry[1:]
-
-            rest_of_entry = rest_of_entry.strip()
+            entry_value = undress_value(entry_value)
 
             output_entry_details_list.append(
-                f"\t{entry_keyword} = \"{entry_val}\",\n"
+                f"\t{entry_keyword} = \"{entry_value}\",\n"
             )
 
         output_entry_list.append(
