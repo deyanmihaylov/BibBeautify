@@ -54,3 +54,7 @@ bibsource
 articleno
 location
 issue
+mendeley-tags
+asin
+dewey
+ean
