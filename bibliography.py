@@ -41,6 +41,9 @@ class Bibliography(ABC):
     def merge(self, AnotherBib) -> None:
         self._merge_with_another(AnotherBib)
 
+    def _merge_with_another(self, AnotherBib) -> None:
+        pass
+
 
 class BibEntry(ABC):
     def __init__(self, entry_string: str) -> None:
