@@ -38,6 +38,9 @@ class Bibliography(ABC):
         for entry in self.entries_strings:
             self.entries.append(BibEntry(entry.strip()))
 
+    def merge(self, AnotherBib) -> None:
+        self._merge_with_another(AnotherBib)
+
 
 class BibEntry(ABC):
     def __init__(self, entry_string: str) -> None:
