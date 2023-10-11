@@ -44,6 +44,9 @@ class BibEntry(ABC):
         self.entry_string = entry_string
         if self.entry_string[-1] == '}':
             raise IndexError("Entry string is not closed by '}'")
+
+        self.entry_type = None
+        self.key = None
         
     def _separate_entry_elements(self) -> None:
         entry_type, entry_body = self.entry_string[:-1].split(
@@ -65,5 +68,5 @@ class BibEntry(ABC):
                 sep = '=',
                 maxsplit = 1,
             )
-        
+
         
