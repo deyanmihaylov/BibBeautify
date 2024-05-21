@@ -21,6 +21,9 @@ def find_parens(s):
 
     return toret
 
+def find_occurrences(s, ch):
+    return [i for i, c in enumerate(s) if c == ch]
+
 def is_good(s):
     if s.count('{') != s.count('}'):
         return False
@@ -60,9 +63,8 @@ if __name__ == "__main__":
     TYPES_LIST = load_words_from_file("entry_types.txt")
     KEYWORDS = load_words_from_file("keywords.txt")
 
-    bib_file = open(args.path, 'r')
-    bib_filecontents = bib_file.read().strip()
-    bib_file.close()
+    with open(args.path, 'r') as bib_file:
+        bib_filecontents = bib_file.read().strip()
 
     # split file into separate entries
     entries_strings = bib_filecontents.split("@")
@@ -115,6 +117,7 @@ if __name__ == "__main__":
             c += 1
             equal_sign_idx = rest_of_entry.find('=')
             entry_keyword = rest_of_entry[0:equal_sign_idx].strip()
+            # if '{' in entry_keyword:
             if entry_keyword.lower() not in KEYWORDS:
                 print("UNKNOWN KEYWORD: ", entry_keyword.lower())
                 exit()
