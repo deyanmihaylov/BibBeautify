@@ -66,6 +66,11 @@ if __name__ == "__main__":
     with open(args.path, 'r') as bib_file:
         bib_filecontents = bib_file.read().strip()
 
+    # check that file has consistent use of curly brackets
+    if not is_good(bib_filecontents):
+        print("Possible runaway string.")
+        sys.exit()
+
     # split file into separate entries
     entries_strings = bib_filecontents.split("@")
     entries_strings = [entry for entry in entries_strings if entry not in ['', '\n']]
