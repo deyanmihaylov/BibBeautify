@@ -31,6 +31,8 @@ reportnumber
 note
 series
 editor
+school
+organization
 adsurl
 biburl
 adsnote
