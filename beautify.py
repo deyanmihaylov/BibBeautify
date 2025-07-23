@@ -122,6 +122,8 @@ if __name__ == "__main__":
             c += 1
             equal_sign_idx = rest_of_entry.find('=')
             entry_keyword = rest_of_entry[0:equal_sign_idx].strip()
+            print(entry_keyword)
+            print()
             # if '{' in entry_keyword:
             if entry_keyword.lower() not in KEYWORDS:
                 print("UNKNOWN KEYWORD: ", entry_keyword.lower())
