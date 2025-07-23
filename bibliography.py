@@ -1,6 +1,16 @@
 from abc import ABC
 import re
+from pybtex.database.input import bibtex
+import sys
 
+
+def is_good(s):
+    if s.count('{') != s.count('}'):
+        return False
+    elif (s.count('"') - s.count('\"')) %2 != 0:
+        return False
+    else:
+        return True
 
 def load_words_from_file(filepath: str) -> list:
     with open (filepath, 'r') as f:
@@ -14,36 +24,98 @@ KEYWORDS = load_words_from_file("keywords.txt")
 class Bibliography(ABC):
     def __init__(self, filepath: str) -> None:
         self.filepath = filepath
-        self.bib_file_contents = None
-        self.entries_strings = None
-        self.number_of_entries = None
+        self.parser = None
+        self.contents = None
         self.entries = None
-        self.entry_type = None
-        self.entry_key = None
+        self.number_of_entries = None
 
-    def _read_bib_file(self) -> None:
-        with open(self.filepath, 'r') as bib_file:
-            self.bib_file_contents = bib_file.read()
+        self._parse_bib_file()
 
-    def _split_bib_file_into_entries(self) -> None:
-        entries_strings = self.bib_file_contents.split("@")
-        self.entries_strings = [
-            entry for entry in entries_strings
-            if entry not in ['', '\n']
-        ]
-        self.number_of_entries = len(self.entries_strings)
+    def _parse_bib_file(self) -> None:
+        self.parser = bibtex.Parser()
+        self.parsed_contents = self.parser.parse_file(self.filepath)
+        self.entries = self.parsed_contents.entries
+        self.number_of_entries = len(self.entries)
+
+    # def _split_bib_file_into_entries(self) -> None:
+    #     entries_strings = self.bib_file_contents.split("@")
+    #     self.entries_strings = [
+    #         entry for entry in entries_strings
+    #         if entry not in ['', '\n']
+    #     ]
+    #     self.number_of_entries = len(self.entries_strings)
 
     def _process_entry_strings(self) -> None:
         self.entries = []
         for entry in self.entries_strings:
             self.entries.append(BibEntry(entry.strip()))
 
-    def merge(self, AnotherBib) -> None:
-        self._merge_with_another(AnotherBib)
+    def merge(self, AnotherBibliography) -> None:
+        self._merge_bibliography(AnotherBibliography)
 
-    def _merge_with_another(self, AnotherBib) -> None:
-        pass
+    def _merge_bibliography(self, AnotherBibliography) -> None:
+        print(f"Current bibliography has {self.number_of_entries} entries.")
 
+        count = 0
+
+        for other_entry in AnotherBibliography.entries:
+            if other_entry not in self.entries:
+                self.entries[other_entry] = AnotherBibliography.entries[other_entry]
+                count += 1
+            elif self.entries[other_entry] != AnotherBibliography.entries[other_entry]:
+                # self._merge_entry(other_entry, AnotherBibliography.entries[other_entry])
+                different = 0
+                for new_field in AnotherBibliography.entries[other_entry].fields:
+                    if new_field not in self.entries[other_entry].fields:
+                        if AnotherBibliography.entries[other_entry].fields[new_field] == '':
+                            continue
+                        else:
+                            different = 1
+                    elif self.entries[other_entry].fields[new_field] != AnotherBibliography.entries[other_entry].fields[new_field]:
+                        different = 1
+                
+                if self.entries[other_entry].persons != AnotherBibliography.entries[other_entry].persons:
+                    different = 1
+
+                if different:
+                    self.entries[f"{other_entry}_NEW"] = AnotherBibliography.entries[other_entry]
+                    print(f"Resolve conflict in entry {other_entry}.")
+                    count += 1
+                else:
+                    pass
+            else:
+                pass
+
+        print(f"Merging added {count} entries from the new bibliography.")
+        
+        self.parsed_contents.entries = self.entries
+        self.number_of_entries = len(self.entries)
+
+        print(f"Current bibliography has {self.number_of_entries} entries.")
+
+    def _merge_entry(self, entry_name, AnotherEntry) -> None:
+        count = 0
+        for new_field in AnotherEntry.fields:
+            if new_field not in self.entries[entry_name].fields:
+                if AnotherEntry.fields[new_field] != '':
+                    self.entries[entry_name].fields[new_field] = AnotherEntry.fields[new_field]
+                    count += 1
+                else:
+                    pass
+            elif self.entries[entry_name].fields[new_field] != AnotherEntry.fields[new_field]:
+                print(f"Differring field '{new_field}':")
+                print(f"\tKept: {self.entries[entry_name].fields[new_field]}")
+                print(f"\tRejected: {AnotherEntry.fields[new_field]}")
+                pass
+
+        if self.entries[entry_name].persons != AnotherEntry.persons:
+            print(f"Different persons.")
+            print(f"\tKept: {self.entries[entry_name].persons}")
+            print(f"\tRejected: {AnotherEntry.persons}")
+            pass
+
+        if count > 0:
+            print(f"Updated entry '{entry_name}' from new bibliography.")
 
 class BibEntry(ABC):
     def __init__(self, entry_string: str) -> None:
