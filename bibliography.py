@@ -2,6 +2,7 @@ from abc import ABC
 import re
 from pybtex.database.input import bibtex
 import sys
+from jinja2 import Environment, FileSystemLoader
 
 
 def is_good(s):
@@ -116,6 +117,25 @@ class Bibliography(ABC):
 
         if count > 0:
             print(f"Updated entry '{entry_name}' from new bibliography.")
+
+    def to_file(
+            self,
+            filename: str = "bibliography.bib",
+        ) -> None:
+        env = Environment(
+            loader=FileSystemLoader("templates"),
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+
+        self.template = env.get_template("bibliography.jinja")
+
+        self.output = self.template.render(
+            bibliography=self.parsed_contents.entries,
+        )
+
+        with open(filename, "w") as output_file:
+	        output_file.write(self.output)
 
 class BibEntry(ABC):
     def __init__(self, entry_string: str) -> None:
