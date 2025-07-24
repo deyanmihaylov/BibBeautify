@@ -12,6 +12,37 @@ def is_good(s):
         return False
     else:
         return True
+    
+def find_matching_paren(s, i, braces=None):
+    openers = braces or {"(": ")"}
+    closers = {v: k for k, v in openers.items()}
+    stack = []
+    result = []
+
+    if s[i] not in openers:
+        raise ValueError(f"char at index {i} was not an opening brace")
+
+    for ii in range(i, len(s)):
+        c = s[ii]
+
+        if c in openers:
+            stack.append([c, ii])
+        elif c in closers:
+            if not stack:
+                raise ValueError(f"tried to close brace without an open at position {i}")
+
+            pair, idx = stack.pop()
+
+            if pair != closers[c]:
+                raise ValueError(f"mismatched brace at position {i}")
+
+            if idx == i:
+                return ii
+    
+    if stack:
+        raise ValueError(f"no closing brace at position {i}")
+
+    return result
 
 def load_words_from_file(filepath: str) -> list:
     with open (filepath, 'r') as f:
@@ -122,6 +153,21 @@ class Bibliography(ABC):
             self,
             filename: str = "bibliography.bib",
         ) -> None:
+
+        self.paren_dict = {}
+
+        for key in self.parsed_contents.entries:
+            entry = self.parsed_contents.entries[key]
+
+            title_bracket_flag = True
+
+            if "title" in entry.fields.keys():
+                if entry.fields["title"][0] == '{':
+                    if find_matching_paren(entry.fields["title"], 0, {'{': '}'}) == len(entry.fields["title"]) - 1:
+                        title_bracket_flag = False
+
+            self.paren_dict[key] = title_bracket_flag
+            
         env = Environment(
             loader=FileSystemLoader("templates"),
             trim_blocks=True,
@@ -132,6 +178,7 @@ class Bibliography(ABC):
 
         self.output = self.template.render(
             bibliography=self.parsed_contents.entries,
+            parentheses=self.paren_dict,
         )
 
         with open(filename, "w") as output_file:
