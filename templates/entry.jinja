@@ -5,8 +5,8 @@
     {% endfor %}
     {% endif %}
     {% for field in bibliography[key].fields %}
-    {% if field == "title" and bibliography[key].fields["title"][0] == '{' %}
-    title = "{{ bibliography[key].fields[field] }}",
+    {% if field == "title" and parentheses[key] == False %}
+    title = {{ bibliography[key].fields[field] }},
     {% else %}
     {{ field.lower() }} = { {{-bibliography[key].fields[field]-}} },
     {% endif %}
